@@ -329,14 +329,15 @@ admin_th_network_peer(void *sock)
    
    if (pthread_mutex_lock(&terms->mutex) != 0)
       thread_error("th_network_peer pthread_mutex_lock",errno);
-
-   fail = term_add_node(&term_node, TERM_VTY, sock, pthread_self());
+   
+   int32_t sock_fd = (int32_t)(uintptr_t)sock;
+   fail = term_add_node(&term_node, TERM_VTY, sock_fd, pthread_self());
 
    if (fail == -1)
    {
       if (pthread_mutex_unlock(&terms->mutex) != 0)
          thread_error("th_network_peer pthread_mutex_unlock",errno);
-      admin_th_network_peer_exit(term_node, sock);
+      admin_th_network_peer_exit(term_node, (int)(uintptr_t)sock);
    }
     
    if (term_node == NULL)
@@ -346,7 +347,7 @@ admin_th_network_peer(void *sock)
       
       if (pthread_mutex_unlock(&terms->mutex) != 0)
          thread_error("th_network_peer pthread_mutex_unlock",errno);
-      admin_th_network_peer_exit(term_node, sock);
+      admin_th_network_peer_exit(term_node, (int)(uintptr_t)sock);
    }
 
    pthread_mutex_lock(&term_node->thread.finished);
@@ -377,14 +378,14 @@ admin_th_network_peer(void *sock)
       thread_error("getpeername",errno);
       if (pthread_mutex_unlock(&terms->mutex) != 0)
          thread_error("th_vty_peer pthread_mutex_unlock",errno);
-      admin_th_network_peer_exit(term_node, sock);
+      admin_th_network_peer_exit(term_node, (int)(uintptr_t)sock);
    }
 
     if (init_attribs(term_node) < 0)
     {
        if (pthread_mutex_unlock(&terms->mutex) != 0)
            thread_error("th_vty_peer pthread_mutex_unlock",errno);
-       admin_th_network_peer_exit(term_node, sock);
+       admin_th_network_peer_exit(term_node, (int)(uintptr_t)sock);
     }                               
    
    term_node->from_port = ntohs(name.sin_port);
